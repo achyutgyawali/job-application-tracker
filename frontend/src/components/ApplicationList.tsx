@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Application } from '../types/application';
 import { applicationService } from '../services/applicationService';
 
-interface ApplicationListProps {
-  onAdd: () => void;
-  onEdit: (app: Application) => void;
-}
+const statusBadgeClass: Record<string, string> = {
+  Applied: 'badge badge-applied',
+  Interviewing: 'badge badge-interviewing',
+  Offer: 'badge badge-offer',
+  Rejected: 'badge badge-rejected',
+};
 
-export const ApplicationList = ({ onAdd, onEdit }: ApplicationListProps) => {
+export const ApplicationList = () => {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState<Application[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Fetch applications
   const fetchApplications = async () => {
     try {
       setLoading(true);
@@ -21,96 +24,99 @@ export const ApplicationList = ({ onAdd, onEdit }: ApplicationListProps) => {
       setApplications(data);
     } catch (error) {
       console.error(error);
-      alert("Failed to load applications");
     } finally {
       setLoading(false);
     }
   };
 
-  // Run on mount and whenever search term or status changes
   useEffect(() => {
     fetchApplications();
   }, [search, statusFilter]);
 
-  // Handle Delete
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this application?")) return;
+    if (!window.confirm('Are you sure you want to delete this application?')) return;
     try {
       await applicationService.delete(id);
       fetchApplications();
     } catch (error) {
       console.error(error);
-      alert("Failed to delete the application");
     }
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Your Applications</h2>
-        <button onClick={onAdd}>+ Add New</button>
+    <div className="card">
+      <div className="toolbar">
+        <h2>Applications</h2>
+        <button className="btn btn-primary" onClick={() => navigate('/add')}>
+          + Add New
+        </button>
       </div>
 
-      <div style={{ marginBottom: '15px', display: 'flex', gap: '10px' }}>
-        {/* Status Filter */}
-        <select
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-          style={{ padding: '5px' }}
-        >
+      <div className="filters" style={{ marginBottom: '16px' }}>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
           <option value="">All Statuses</option>
           <option value="Applied">Applied</option>
           <option value="Interviewing">Interviewing</option>
           <option value="Offer">Offer</option>
           <option value="Rejected">Rejected</option>
         </select>
-
-        {/* Search Bar */}
         <input
           type="text"
           placeholder="Search by company or title..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ padding: '5px', width: '300px' }}
+          style={{ minWidth: '240px' }}
         />
       </div>
 
-      {/* Loading State */}
       {loading ? (
-        <p>Loading applications...</p>
+        <div className="loading">Loading...</div>
       ) : applications.length === 0 ? (
-        <p>No applications found.</p>
+        <div className="empty-state">
+          <p>No applications found. Click "+ Add New" to get started!</p>
+        </div>
       ) : (
-        /* Applications Table */
-        <table border={1} cellPadding={8} style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f2f2f2' }}>
-              <th>Company</th>
-              <th>Job Title</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Applied Date</th>
-              <th>Notes</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {applications.map(app => (
-              <tr key={app.id}>
-                <td>{app.company_name}</td>
-                <td>{app.job_title}</td>
-                <td>{app.job_type}</td>
-                <td>{app.status}</td>
-                <td>{new Date(app.applied_date).toLocaleDateString()}</td>
-                <td>{app.notes || '-'}</td>
-                <td>
-                  <button onClick={() => onEdit(app)} style={{ marginRight: '8px' }}>Edit</button>
-                  <button onClick={() => handleDelete(app.id)}>Delete</button>
-                </td>
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Job Title</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Notes</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {applications.map(app => (
+                <tr key={app.id}>
+                  <td style={{ fontWeight: 500 }}>{app.company_name}</td>
+                  <td>{app.job_title}</td>
+                  <td>{app.job_type}</td>
+                  <td>
+                    <span className={statusBadgeClass[app.status] || 'badge'}>
+                      {app.status}
+                    </span>
+                  </td>
+                  <td>{new Date(app.applied_date).toLocaleDateString()}</td>
+                  <td>{app.notes || '—'}</td>
+                  <td>
+                    <div className="actions-cell">
+                      <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/edit/${app.id}`)}>
+                        Edit
+                      </button>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(app.id)}>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

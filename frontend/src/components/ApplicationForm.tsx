@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { Application } from '../types/application';
 import { applicationService } from '../services/applicationService';
 
-interface ApplicationFormProps {
-  editData?: Application | null;
-  onSave: () => void;
-  onCancel: () => void;
-}
-
-export const ApplicationForm = ({ editData, onSave, onCancel }: ApplicationFormProps) => {
-  const isEditMode = !!editData;
+export const ApplicationForm = () => {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = !!id;
 
   const [companyName, setCompanyName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -18,18 +15,28 @@ export const ApplicationForm = ({ editData, onSave, onCancel }: ApplicationFormP
   const [appliedDate, setAppliedDate] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
 
-  // Pre-fill the form when editing
+  // Fetch existing data when editing
   useEffect(() => {
-    if (editData) {
-      setCompanyName(editData.company_name);
-      setJobTitle(editData.job_title);
-      setJobType(editData.job_type);
-      setStatus(editData.status);
-      setAppliedDate(new Date(editData.applied_date).toISOString().split('T')[0]);
-      setNotes(editData.notes || '');
+    if (id) {
+      setFetching(true);
+      applicationService.getById(id)
+        .then((data: Application) => {
+          setCompanyName(data.company_name);
+          setJobTitle(data.job_title);
+          setJobType(data.job_type);
+          setStatus(data.status);
+          setAppliedDate(new Date(data.applied_date).toISOString().split('T')[0]);
+          setNotes(data.notes || '');
+        })
+        .catch(() => {
+          alert('Application not found.');
+          navigate('/');
+        })
+        .finally(() => setFetching(false));
     }
-  }, [editData]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,12 +52,12 @@ export const ApplicationForm = ({ editData, onSave, onCancel }: ApplicationFormP
     };
 
     try {
-      if (isEditMode && editData) {
-        await applicationService.update(editData.id, payload);
+      if (isEditMode && id) {
+        await applicationService.update(id, payload);
       } else {
         await applicationService.create(payload as Omit<Application, 'id'>);
       }
-      onSave();
+      navigate('/');
     } catch (error) {
       console.error(error);
       alert('Failed to save the application.');
@@ -59,63 +66,67 @@ export const ApplicationForm = ({ editData, onSave, onCancel }: ApplicationFormP
     }
   };
 
+  if (fetching) {
+    return <div className="card loading">Loading application data...</div>;
+  }
+
   return (
-    <div style={{ maxWidth: '500px' }}>
-      <h2>{isEditMode ? 'Edit Application' : 'Add New Application'}</h2>
+    <div className="card">
+      <h2 style={{ marginBottom: '20px' }}>
+        {isEditMode ? 'Edit Application' : 'Add New Application'}
+      </h2>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div>
-          <label>Company Name *</label>
-          <input required style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-            value={companyName} onChange={e => setCompanyName(e.target.value)} />
+      <form onSubmit={handleSubmit}>
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Company Name *</label>
+            <input required value={companyName} onChange={e => setCompanyName(e.target.value)} />
+          </div>
+
+          <div className="form-group">
+            <label>Job Title *</label>
+            <input required value={jobTitle} onChange={e => setJobTitle(e.target.value)} />
+          </div>
+
+          <div className="form-group">
+            <label>Job Type</label>
+            <select value={jobType} onChange={e => setJobType(e.target.value)}>
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Contract">Contract</option>
+              <option value="Internship">Internship</option>
+              <option value="Freelance">Freelance</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Status</label>
+            <select value={status} onChange={e => setStatus(e.target.value)}>
+              <option value="Applied">Applied</option>
+              <option value="Interviewing">Interviewing</option>
+              <option value="Offer">Offer</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Applied Date *</label>
+            <input type="date" required value={appliedDate} onChange={e => setAppliedDate(e.target.value)} />
+          </div>
+
+          <div className="form-group full-width">
+            <label>Notes</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes..." />
+          </div>
         </div>
 
-        <div>
-          <label>Job Title *</label>
-          <input required style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-            value={jobTitle} onChange={e => setJobTitle(e.target.value)} />
-        </div>
-
-        <div>
-          <label>Job Type</label>
-          <select style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-            value={jobType} onChange={e => setJobType(e.target.value)}>
-            <option value="Full-time">Full-time</option>
-            <option value="Part-time">Part-time</option>
-            <option value="Contract">Contract</option>
-            <option value="Internship">Internship</option>
-            <option value="Freelance">Freelance</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Status</label>
-          <select style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-            value={status} onChange={e => setStatus(e.target.value)}>
-            <option value="Applied">Applied</option>
-            <option value="Interviewing">Interviewing</option>
-            <option value="Offer">Offer</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Applied Date *</label>
-          <input type="date" required style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-            value={appliedDate} onChange={e => setAppliedDate(e.target.value)} />
-        </div>
-
-        <div>
-          <label>Notes</label>
-          <textarea style={{ width: '100%', padding: '6px', marginTop: '4px', minHeight: '60px' }}
-            value={notes} onChange={e => setNotes(e.target.value)} />
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : isEditMode ? 'Update' : 'Save'}
+        <div className="form-actions">
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Saving...' : isEditMode ? 'Update Application' : 'Save Application'}
           </button>
-          <button type="button" onClick={onCancel}>Cancel</button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/')}>
+            Cancel
+          </button>
         </div>
       </form>
     </div>

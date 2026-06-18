@@ -25,6 +25,13 @@ export const applicationService = {
     if (!response.ok) throw new Error("Failed to delete application");
   },
 
+  // Fetch a single application by ID
+  getById: async (id: string): Promise<Application> => {
+    const response = await fetch(`${API_URL}/${id}`);
+    if (!response.ok) throw new Error("Application not found");
+    return response.json();
+  },
+
   // Create a new application
   create: async (data: Omit<Application, 'id'>): Promise<Application> => {
     const response = await fetch(API_URL, {
