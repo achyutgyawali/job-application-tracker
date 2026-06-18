@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import type { Application } from '../types/application';
 import { applicationService } from '../services/applicationService';
 
-export const ApplicationList = () => {
+interface ApplicationListProps {
+  onAdd: () => void;
+  onEdit: (app: Application) => void;
+}
+
+export const ApplicationList = ({ onAdd, onEdit }: ApplicationListProps) => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -32,7 +37,6 @@ export const ApplicationList = () => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
     try {
       await applicationService.delete(id);
-      // Refresh the list after successful deletion
       fetchApplications();
     } catch (error) {
       console.error(error);
@@ -40,15 +44,12 @@ export const ApplicationList = () => {
     }
   };
 
-  // Handle Edit (Placeholder for now)
-  const handleEdit = (app: Application) => {
-    // We will hook this up to the routing/form later!
-    alert(`Edit clicked for ${app.company_name}`);
-  };
-
   return (
     <div>
-      <h2>Your Applications</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Your Applications</h2>
+        <button onClick={onAdd}>+ Add New</button>
+      </div>
 
       <div style={{ marginBottom: '15px', display: 'flex', gap: '10px' }}>
         {/* Status Filter */}
@@ -103,7 +104,7 @@ export const ApplicationList = () => {
                 <td>{new Date(app.applied_date).toLocaleDateString()}</td>
                 <td>{app.notes || '-'}</td>
                 <td>
-                  <button onClick={() => handleEdit(app)} style={{ marginRight: '8px' }}>Edit</button>
+                  <button onClick={() => onEdit(app)} style={{ marginRight: '8px' }}>Edit</button>
                   <button onClick={() => handleDelete(app.id)}>Delete</button>
                 </td>
               </tr>
