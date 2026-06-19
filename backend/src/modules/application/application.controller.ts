@@ -14,9 +14,25 @@ export const createApplication = asyncHandler(async (req: Request, res: Response
 // geet all applications (with filters)
 
 export const getApplications = asyncHandler(async (req: Request, res: Response) => {
-  const { status, search } = req.query;
-  const applications = await applicationService.getApplications(status as string, search as string);
-  res.json(applications);
+  const { status, search, page, limit } = req.query;
+  
+  const pageNum = parseInt(page as string) || 1;
+  const limitNum = parseInt(limit as string) || 10;
+
+  const { data, total } = await applicationService.getApplications(
+    status as string,
+    search as string,
+    pageNum,
+    limitNum
+  );
+
+  res.json({
+    data,
+    total,
+    page: pageNum,
+    limit: limitNum,
+    totalPages: Math.ceil(total / limitNum)
+  });
 });
 
 // get an application by id

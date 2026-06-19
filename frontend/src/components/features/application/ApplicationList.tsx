@@ -18,6 +18,10 @@ export const ApplicationList = () => {
     setSearch,
     statusFilter,
     setStatusFilter,
+    page,
+    totalPages,
+    nextPage,
+    prevPage,
     isModalOpen,
     confirmDelete,
     handleConfirmDelete,
@@ -57,47 +61,70 @@ export const ApplicationList = () => {
           <p>No applications found. Click "+ Add New" to get started!</p>
         </div>
       ) : (
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th>Job Title</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Notes</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map(app => (
-                <tr key={app.id}>
-                  <td style={{ fontWeight: 500 }}>{app.company_name}</td>
-                  <td>{app.job_title}</td>
-                  <td>{app.job_type}</td>
-                  <td>
-                    <span className={statusBadgeClass[app.status] || 'badge'}>
-                      {app.status}
-                    </span>
-                  </td>
-                  <td>{new Date(app.applied_date).toLocaleDateString()}</td>
-                  <td>{app.notes || '—'}</td>
-                  <td>
-                    <div className="actions-cell">
-                      <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/edit/${app.id}`)}>
-                        Edit
-                      </button>
-                      <button className="btn btn-danger btn-sm" onClick={() => confirmDelete(app.id)}>
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Job Title</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {applications.map(app => (
+                  <tr key={app.id}>
+                    <td style={{ fontWeight: 500 }}>{app.company_name}</td>
+                    <td>{app.job_title}</td>
+                    <td>{app.job_type}</td>
+                    <td>
+                      <span className={statusBadgeClass[app.status] || 'badge'}>
+                        {app.status}
+                      </span>
+                    </td>
+                    <td>{new Date(app.applied_date).toLocaleDateString()}</td>
+                    <td>{app.notes || '—'}</td>
+                    <td>
+                      <div className="actions-cell">
+                        <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/edit/${app.id}`)}>
+                          Edit
+                        </button>
+                        <button className="btn btn-danger btn-sm" onClick={() => confirmDelete(app.id)}>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="pagination">
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={prevPage}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+            <span className="pagination-info">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={nextPage}
+              disabled={page === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
 
       <ConfirmationModal

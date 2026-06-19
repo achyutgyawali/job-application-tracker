@@ -9,6 +9,10 @@ export const useApplications = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   // Deletion modal state
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,8 +20,9 @@ export const useApplications = () => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const data = await applicationService.getAll(statusFilter, search);
-      setApplications(data);
+      const res = await applicationService.getAll(statusFilter, search, page, 10);
+      setApplications(res.data);
+      setTotalPages(res.totalPages || 1);
     } catch (error) {
       console.error(error);
       toast.error('Failed to load applications.');
@@ -26,9 +31,15 @@ export const useApplications = () => {
     }
   };
 
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter]);
+
+  // Fetch applications when page, search, or status filter changes
   useEffect(() => {
     fetchApplications();
-  }, [search, statusFilter]);
+  }, [page, search, statusFilter]);
 
   const confirmDelete = (id: string) => {
     setDeleteTargetId(id);
@@ -55,6 +66,18 @@ export const useApplications = () => {
     setDeleteTargetId(null);
   };
 
+  const nextPage = () => {
+    if (page < totalPages) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (page > 1) {
+      setPage(prev => prev - 1);
+    }
+  };
+
   return {
     applications,
     loading,
@@ -62,6 +85,10 @@ export const useApplications = () => {
     setSearch,
     statusFilter,
     setStatusFilter,
+    page,
+    totalPages,
+    nextPage,
+    prevPage,
     isModalOpen,
     confirmDelete,
     handleConfirmDelete,

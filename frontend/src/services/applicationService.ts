@@ -1,14 +1,21 @@
 import { api } from './api';
-import type { Application } from '../types';
+import type { Application, PaginatedResponse } from '../types';
 
 export const applicationService = {
-  // Fetch all applications, optionally filtered by status and search term
-  getAll: async (status?: string, search?: string): Promise<Application[]> => {
+  // Fetch all applications paginated, optionally filtered by status and search term
+  getAll: async (
+    status?: string,
+    search?: string,
+    page?: number,
+    limit?: number
+  ): Promise<PaginatedResponse<Application>> => {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
     if (search) params.append('search', search);
+    if (page) params.append('page', String(page));
+    if (limit) params.append('limit', String(limit));
 
-    return api.get<Application[]>('/applications', params);
+    return api.get<PaginatedResponse<Application>>('/applications', params);
   },
 
   // Delete an application by ID
