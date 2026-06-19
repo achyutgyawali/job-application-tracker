@@ -7,7 +7,7 @@ export const applicationSchema = z.object({
   job_type: z.enum(["Internship", "Full-time", "Part-time"]),
   status: z.enum(["Applied", "Interviewing", "Offer", "Rejected"]),
   applied_date: z.string().datetime(), // ISO date string
-  notes: z.string().optional()
+  notes: z.string().nullable().optional()
 });
 
 // Makes all fields optional for PATCH request updates
