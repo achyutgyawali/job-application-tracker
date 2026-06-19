@@ -1,56 +1,33 @@
-import type { Application } from '../types/application';
-
-const API_URL = 'http://localhost:5000/applications';
+import { api } from './api';
+import type { Application } from '../types';
 
 export const applicationService = {
   // Fetch all applications, optionally filtered by status and search term
   getAll: async (status?: string, search?: string): Promise<Application[]> => {
-    let url = API_URL;
     const params = new URLSearchParams();
-
     if (status) params.append('status', status);
     if (search) params.append('search', search);
 
-    const queryString = params.toString();
-    if (queryString) url += `?${queryString}`;
-
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch applications");
-    return response.json();
+    return api.get<Application[]>('/applications', params);
   },
 
   // Delete an application by ID
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-    if (!response.ok) throw new Error("Failed to delete application");
+    return api.delete<void>(`/applications/${id}`);
   },
 
   // Fetch a single application by ID
   getById: async (id: string): Promise<Application> => {
-    const response = await fetch(`${API_URL}/${id}`);
-    if (!response.ok) throw new Error("Application not found");
-    return response.json();
+    return api.get<Application>(`/applications/${id}`);
   },
 
   // Create a new application
   create: async (data: Omit<Application, 'id'>): Promise<Application> => {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error("Failed to create application");
-    return response.json();
+    return api.post<Application>('/applications', data);
   },
 
   // Update an existing application
   update: async (id: string, data: Partial<Application>): Promise<Application> => {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error("Failed to update application");
-    return response.json();
+    return api.patch<Application>(`/applications/${id}`, data);
   },
 };

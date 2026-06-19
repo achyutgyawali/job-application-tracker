@@ -1,12 +1,5 @@
 import React from 'react';
-
-interface ConfirmationModalProps {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
+import type { ConfirmationModalProps } from '../../types/modal';
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,

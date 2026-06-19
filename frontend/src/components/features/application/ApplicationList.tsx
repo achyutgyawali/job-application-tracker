@@ -1,9 +1,6 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import type { Application } from '../types/application';
-import { applicationService } from '../services/applicationService';
-import { ConfirmationModal } from './ConfirmationModal';
+import { useApplications } from '../../../hooks/useApplications';
+import { ConfirmationModal } from '../../common/ConfirmationModal';
 
 const statusBadgeClass: Record<string, string> = {
   Applied: 'badge badge-applied',
@@ -14,51 +11,18 @@ const statusBadgeClass: Record<string, string> = {
 
 export const ApplicationList = () => {
   const navigate = useNavigate();
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  // Deletion modal state
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const fetchApplications = async () => {
-    try {
-      setLoading(true);
-      const data = await applicationService.getAll(statusFilter, search);
-      setApplications(data);
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to load applications.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchApplications();
-  }, [search, statusFilter]);
-
-  const confirmDelete = (id: string) => {
-    setDeleteTargetId(id);
-    setIsModalOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deleteTargetId) return;
-    try {
-      await applicationService.delete(deleteTargetId);
-      toast.success('Application deleted successfully!');
-      fetchApplications();
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to delete the application.');
-    } finally {
-      setIsModalOpen(false);
-      setDeleteTargetId(null);
-    }
-  };
+  const {
+    applications,
+    loading,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    isModalOpen,
+    confirmDelete,
+    handleConfirmDelete,
+    handleCancelDelete,
+  } = useApplications();
 
   return (
     <div className="card">
@@ -141,10 +105,7 @@ export const ApplicationList = () => {
         title="Confirm Deletion"
         message="Are you sure you want to delete this job application? This action cannot be undone."
         onConfirm={handleConfirmDelete}
-        onCancel={() => {
-          setIsModalOpen(false);
-          setDeleteTargetId(null);
-        }}
+        onCancel={handleCancelDelete}
       />
     </div>
   );

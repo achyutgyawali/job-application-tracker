@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ApplicationList } from './components/ApplicationList';
-import { ApplicationForm } from './components/ApplicationForm';
+import { ApplicationList } from './components/features/application/ApplicationList';
+import { ApplicationForm } from './components/features/application/ApplicationForm';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
