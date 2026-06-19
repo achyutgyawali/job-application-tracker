@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import type { Application } from '../types/application';
 import { applicationService } from '../services/applicationService';
+import { ConfirmationModal } from './ConfirmationModal';
 
 const statusBadgeClass: Record<string, string> = {
   Applied: 'badge badge-applied',
@@ -17,6 +19,10 @@ export const ApplicationList = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Deletion modal state
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const fetchApplications = async () => {
     try {
       setLoading(true);
@@ -24,6 +30,7 @@ export const ApplicationList = () => {
       setApplications(data);
     } catch (error) {
       console.error(error);
+      toast.error('Failed to load applications.');
     } finally {
       setLoading(false);
     }
@@ -33,13 +40,23 @@ export const ApplicationList = () => {
     fetchApplications();
   }, [search, statusFilter]);
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this application?')) return;
+  const confirmDelete = (id: string) => {
+    setDeleteTargetId(id);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
     try {
-      await applicationService.delete(id);
+      await applicationService.delete(deleteTargetId);
+      toast.success('Application deleted successfully!');
       fetchApplications();
     } catch (error) {
       console.error(error);
+      toast.error('Failed to delete the application.');
+    } finally {
+      setIsModalOpen(false);
+      setDeleteTargetId(null);
     }
   };
 
@@ -107,7 +124,7 @@ export const ApplicationList = () => {
                       <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/edit/${app.id}`)}>
                         Edit
                       </button>
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(app.id)}>
+                      <button className="btn btn-danger btn-sm" onClick={() => confirmDelete(app.id)}>
                         Delete
                       </button>
                     </div>
@@ -118,6 +135,17 @@ export const ApplicationList = () => {
           </table>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this job application? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setDeleteTargetId(null);
+        }}
+      />
     </div>
   );
 };
