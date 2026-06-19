@@ -191,39 +191,39 @@ The client app will launch at `http://localhost:5173`.
 ## Screenshots
 
 ### 1. Applications Dashboard
-![Applications Listing](./screenshots/applications_listing.png)
+![Applications Listing](./screenshots/applications_listing.png?v=1)
 
 ### 2. Creating New Applications
 #### Add Application Form
-![Add Application Form](./screenshots/add_form.png)
+![Add Application Form](./screenshots/add_form.png?v=1)
 
 #### Creation Success Notification
-![Application Success Toast](./screenshots/application_success.png)
+![Application Success Toast](./screenshots/application_success.png?v=1)
 
 ### 3. Editing Existing Applications
 #### Edit Application Form
-![Edit Application Form](./screenshots/edit_form.png)
+![Edit Application Form](./screenshots/edit_form.png?v=1)
 
 #### Edition Success Notification
-![Edit Success Toast](./screenshots/edit_success.png)
+![Edit Success Toast](./screenshots/edit_success.png?v=1)
 
 ### 4. Search and Filters
 #### Filtering by Status
-![Filter by Status](./screenshots/filter_by_status.png)
+![Filter by Status](./screenshots/filter_by_status.png?v=1)
 
 #### Searching by Company/Title
-![Search by Company/Title](./screenshots/filter_by_title_name.png)
+![Search by Company/Title](./screenshots/filter_by_title_name.png?v=1)
 
 ### 5. Pagination Control Flow
 #### Page 1 View
-![Pagination Page 1](./screenshots/pagination_1.png)
+![Pagination Page 1](./screenshots/pagination_1.png?v=1)
 
 #### Page 2 View
-![Pagination Page 2](./screenshots/pagination_2.png)
+![Pagination Page 2](./screenshots/pagination_2.png?v=1)
 
 ### 6. Delete Confirmation Flow
 #### Custom Delete Confirmation Modal
-![Delete Confirmation Modal](./screenshots/delete_confirmation.png)
+![Delete Confirmation Modal](./screenshots/delete_confirmation.png?v=1)
 
 #### Deletion Success Notification
-![Delete Success Toast](./screenshots/delete_success.png)
+![Delete Success Toast](./screenshots/delete_success.png?v=1)
