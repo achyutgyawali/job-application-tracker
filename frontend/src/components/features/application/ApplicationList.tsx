@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApplications } from '../../../hooks/useApplications';
 import { ConfirmationModal } from '../../common/ConfirmationModal';
+import { ApplicationDetailModal } from './ApplicationDetailModal';
+import type { Application } from '../../../types';
 
 const statusBadgeClass: Record<string, string> = {
   Applied: 'badge badge-applied',
@@ -27,6 +30,20 @@ export const ApplicationList = () => {
     handleConfirmDelete,
     handleCancelDelete,
   } = useApplications();
+
+  // View details modal state
+  const [viewTarget, setViewTarget] = useState<Application | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+
+  const openViewDetails = (app: Application) => {
+    setViewTarget(app);
+    setIsViewOpen(true);
+  };
+
+  const closeViewDetails = () => {
+    setIsViewOpen(false);
+    setViewTarget(null);
+  };
 
   return (
     <div className="card">
@@ -87,9 +104,22 @@ export const ApplicationList = () => {
                       </span>
                     </td>
                     <td>{new Date(app.applied_date).toLocaleDateString()}</td>
-                    <td>{app.notes || '—'}</td>
+                    <td>
+                      {app.notes ? (
+                        app.notes.length > 25 ? (
+                          `${app.notes.substring(0, 25)}...`
+                        ) : (
+                          app.notes
+                        )
+                      ) : (
+                        '—'
+                      )}
+                    </td>
                     <td>
                       <div className="actions-cell">
+                        <button className="btn btn-secondary btn-sm" onClick={() => openViewDetails(app)}>
+                          View
+                        </button>
                         <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/edit/${app.id}`)}>
                           Edit
                         </button>
@@ -127,12 +157,20 @@ export const ApplicationList = () => {
         </>
       )}
 
+      {/* Confirmation Delete Modal */}
       <ConfirmationModal
         isOpen={isModalOpen}
         title="Confirm Deletion"
         message="Are you sure you want to delete this job application? This action cannot be undone."
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      {/* Details View Modal */}
+      <ApplicationDetailModal
+        isOpen={isViewOpen}
+        application={viewTarget}
+        onClose={closeViewDetails}
       />
     </div>
   );
